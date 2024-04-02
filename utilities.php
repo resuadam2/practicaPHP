@@ -70,7 +70,8 @@ function registrarUsuario($name, $pass, $email, $gender, $birthdate, $city, $id_
     global $utils;
     $conn = conectarDB();
     $next_id = $conn->insert_id;
-    $photo_path = "profiles/$next_id/$photo"; // Ruta de la foto de perfil
+    $photo_path = "profiles/$next_id/"; // Ruta de la foto de perfil
+    $pass = md5($pass); // Encriptar la contraseña
     $sql = "INSERT INTO users (name, pass, email, gender, birthdate, city, id_country, photo, id_style) 
      VALUES ('$name', '$pass', '$email', $gender, '$birthdate', '$city', $id_country, '$photo_path', $id_style)";
     if ($conn->query($sql) === TRUE) {
@@ -97,6 +98,25 @@ function crearCarpetaUsuario($id_user, $photo) {
     }
     $target_file = $target_dir . basename($photo);
     move_uploaded_file($photo, $target_file);
+}
+
+/**
+ * Función para obtener el id del usuario a partir de su correo electrónico
+ * siempre y cuándo la contraseña sea correcta (de lo contrario devuelve null)
+ * @param email Correo electrónico del usuario
+ * @param pass Contraseña del usuario
+ */
+function obtenerIdUsuarioPorEmail($email, $pass) {
+    global $utils;
+    $conn = conectarDB();
+    $sql = "SELECT id FROM users WHERE email = '$email' AND pass = '$pass'";
+    $result = $conn->query($sql);
+    $conn->close();
+    if ($result->num_rows > 0) {
+        return $result->fetch_assoc()['id'];
+    } else {
+        return null;
+    }
 }
 
 /*
